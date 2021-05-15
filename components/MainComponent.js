@@ -27,7 +27,7 @@ const DirectoryNavigator = createStackNavigator(
         }
     }
 );
-
+​
 const HomeNavigator = createStackNavigator(
     {
         Home: { screen: Home }
@@ -44,7 +44,7 @@ const HomeNavigator = createStackNavigator(
         }
     }
 );
-
+​
 const AboutNavigator = createStackNavigator(
     {
         About: { screen: About }
@@ -61,7 +61,7 @@ const AboutNavigator = createStackNavigator(
         }
     }
 );
-
+​
 const ContactNavigator = createStackNavigator(
     {
         Contact: { screen: Contact }
@@ -78,7 +78,7 @@ const ContactNavigator = createStackNavigator(
         }
     }
 );
-
+​
 const MainNavigator = createDrawerNavigator(
     {
         Home: { screen: HomeNavigator },
@@ -90,15 +90,15 @@ const MainNavigator = createDrawerNavigator(
         drawerBackgroundColor: '#CEC8FF'
     }
 );
-
+​
 const AppNavigator = createAppContainer(MainNavigator)
-
+​
 class Main extends Component {
     render() {
         return (
             <View
                 style={{
-                    flex: 1,
+                    flex: 1, 
                     paddingTop: Platform.OS === 'ios' ? 0 : Expo.Constants.statusBarHeight
                 }}>
                 <AppNavigator />
@@ -106,5 +106,5 @@ class Main extends Component {
         );
     }
 }
-
+​
 export default Main;
