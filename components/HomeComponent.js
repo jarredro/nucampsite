@@ -4,7 +4,7 @@ import { Card } from 'react-native-elements';
 import { CAMPSITES } from '../shared/campsites';
 import { PROMOTIONS } from '../shared/promotions';
 import { PARTNERS } from '../shared/partners';
-​
+
 function RenderItem({item}) {
     if (item) {
         return (
@@ -20,9 +20,9 @@ function RenderItem({item}) {
     }
     return <View />;
 }
-​
+
 class Home extends Component {
-​
+
     constructor(props) {
         super(props);
         this.state = {
@@ -31,11 +31,11 @@ class Home extends Component {
             partners: PARTNERS
         };
     }
-​
+
     static navigationOptions = {
         title: 'Home'
     }
-​
+
     render() {
         return (
             <ScrollView>
@@ -52,5 +52,5 @@ class Home extends Component {
         );
     }
 }
-​
+
 export default Home;
