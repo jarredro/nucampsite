@@ -233,13 +233,12 @@ const MainNavigator = createDrawerNavigator(
                     />
                 )
             }
-        },
     },
     Favorites: {
     screen: FavoritesNavigator,
     navigationOptions: {
         drawerLabel: 'My Favorites',
-        drawerIcon: ({ tintColor }) => (
+        drawerIcon: ({tintColor}) => (
             <Icon
                 name='heart'
                 type='font-awesome'
@@ -253,7 +252,7 @@ const MainNavigator = createDrawerNavigator(
     screen: AboutNavigator,
     navigationOptions: {
         drawerLabel: 'About Us',
-        drawerIcon: ({ tintColor }) => (
+        drawerIcon: ({tintColor}) => (
             <Icon
                 name='info-circle'
                 type='font-awesome'
