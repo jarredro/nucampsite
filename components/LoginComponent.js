@@ -1,312 +1,416 @@
 import React, { Component } from 'react';
-import { View, StyleSheet, ScrollView, Image } from 'react-native';
-import { Input, CheckBox, Button, Icon } from 'react-native-elements';
-import * as SecureStore from 'expo-secure-store';
-import * as ImagePicker from 'expo-image-picker';
-import * as Permissions from 'expo-permissions';
-import { createBottomTabNavigator } from 'react-navigation-tabs';
-import { baseUrl } from '../shared/baseUrl';
+import Home from './HomeComponent';
+import Directory from './DirectoryComponent';
+import CampsiteInfo from './CampsiteInfoComponent';
+import About from './AboutComponent';
+import Contact from './ContactComponent';
+import Reservation from './ReservationComponent';
+import Favorites from './FavoritesComponent';
+import Login from './LoginComponent';
+import { View, Platform, StyleSheet, Text, ScrollView, Image,
+    Alert, ToastAndroid } from 'react-native';
+import { createStackNavigator } from 'react-navigation-stack';
+import { createDrawerNavigator, DrawerItems } from "react-navigation-drawer";
+import { createAppContainer } from 'react-navigation';
+import { Icon } from 'react-native-elements';
+import SafeAreaView from 'react-native-safe-area-view';
+import { connect } from 'react-redux';
+import { fetchCampsites, fetchComments, fetchPromotions,
+    fetchPartners } from '../redux/ActionCreators';
+import NetInfo from '@react-native-community/netinfo';
 
-class LoginTab extends Component {
+const mapDispatchToProps = {
+    fetchCampsites,
+    fetchComments,
+    fetchPromotions,
+    fetchPartners
+};
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            username: '',
-            password: '',
-            remember: false
-        };
-    }
-
-    static navigationOptions = {
-        title: 'Login',
-        tabBarIcon: ({tintColor}) => (
-            <Icon
-                name='sign-in'
-                type='font-awesome'
-                iconStyle={{color: tintColor}}
-            />
-        )
-    }
-
-    handleLogin() {
-        console.log(JSON.stringify(this.state));
-        if (this.state.remember) {
-            SecureStore.setItemAsync(
-                'userinfo',
-                JSON.stringify({
-                    username: this.state.username,
-                    password: this.state.password
-                })
-            ).catch(error => console.log('Could not save user info', error));
-        } else {
-            SecureStore.deleteItemAsync('userinfo').catch(
-                error => console.log('Could not delete user info', error)
-            );
+const DirectoryNavigator = createStackNavigator(
+    {
+        Directory: { 
+            screen: Directory,
+            navigationOptions: ({navigation}) => ({
+                headerLeft: <Icon
+                    name='list'
+                    type='font-awesome'
+                    iconStyle={styles.stackIcon}
+                    onPress={() => navigation.toggleDrawer()}
+                />
+            })
+        },
+        CampsiteInfo: { screen: CampsiteInfo }
+    },
+    {
+        initialRouteName: 'Directory',
+        defaultNavigationOptions: {
+            headerStyle: {
+                backgroundColor: '#5637DD'
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+                color: '#fff'
+            }
         }
     }
+);
+
+const HomeNavigator = createStackNavigator(
+    {
+        Home: { screen: Home }
+    },
+    {
+        defaultNavigationOptions: ({navigation}) => ({
+            headerStyle: {
+                backgroundColor: '#5637DD'
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+                color: '#fff'
+            },
+            headerLeft: <Icon
+                name='home'
+                type='font-awesome'
+                iconStyle={styles.stackIcon}
+                onPress={() => navigation.toggleDrawer()}
+            />
+        })
+    }
+);
+
+const AboutNavigator = createStackNavigator(
+    {
+        About: { screen: About }
+    },
+    {
+        defaultNavigationOptions: ({navigation}) => ({
+            headerStyle: {
+                backgroundColor: '#5637DD'
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+                color: '#fff'
+            },
+            headerLeft: <Icon
+                name='info-circle'
+                type='font-awesome'
+                iconStyle={styles.stackIcon}
+                onPress={() => navigation.toggleDrawer()}
+            />
+        })
+    }
+);
+
+const ContactNavigator = createStackNavigator(
+    {
+        Contact: { screen: Contact }
+    },
+    {
+        defaultNavigationOptions: ({navigation}) => ({
+            headerStyle: {
+                backgroundColor: '#5637DD'
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+                color: '#fff'
+            },
+            headerLeft: <Icon
+                name='address-card'
+                type='font-awesome'
+                iconStyle={styles.stackIcon}
+                onPress={() => navigation.toggleDrawer()}
+            />
+        })
+    }
+);
+
+const ReservationNavigator = createStackNavigator(
+    {
+        Reservation: { screen: Reservation }
+    },
+    {
+        defaultNavigationOptions: ({navigation}) => ({
+            headerStyle: {
+                backgroundColor: '#5637DD'
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+                color: '#fff'
+            },
+            headerLeft: <Icon
+                name='tree'
+                type='font-awesome'
+                iconStyle={styles.stackIcon}
+                onPress={() => navigation.toggleDrawer()}
+            />
+        })
+    }
+);
+
+const FavoritesNavigator = createStackNavigator(
+    {
+        Favorites: { screen: Favorites }
+    },
+    {
+        defaultNavigationOptions: ({navigation}) => ({
+            headerStyle: {
+                backgroundColor: '#5637DD'
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+                color: '#fff'
+            },
+            headerLeft: <Icon
+                name='heart'
+                type='font-awesome'
+                iconStyle={styles.stackIcon}
+                onPress={() => navigation.toggleDrawer()}
+            />
+        })
+    }
+);
+
+const LoginNavigator = createStackNavigator(
+    {
+        Login: { screen: Login }
+    },
+    {
+        defaultNavigationOptions: ({navigation}) => ({
+            headerStyle: {
+                backgroundColor: '#5637DD'
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+                color: '#fff'
+            },
+            headerLeft: <Icon
+                name='sign-in'
+                type='font-awesome'
+                iconStyle={styles.stackIcon}
+                onPress={() => navigation.toggleDrawer()}
+            />
+        })
+    }
+);
+
+const CustomDrawerContentComponent = props => (
+    <ScrollView>
+        <SafeAreaView
+            style={styles.container}
+            forceInset={{top: 'always', horizontal: 'never'}}
+        >
+            <View style={styles.drawerHeader}>
+                <View style={{flex: 1}}>
+                    <Image
+                        source={require('./images/logo.png')}
+                        style={styles.drawerImage}
+                    />
+                </View>
+                <View style={{flex: 2}}>
+                    <Text style={styles.drawerHeaderText}>NuCamp</Text>
+                </View>
+            </View>
+            <DrawerItems {...props} />
+        </SafeAreaView>
+    </ScrollView>
+);
+
+const MainNavigator = createDrawerNavigator(
+    {
+        Login: {
+            screen: LoginNavigator,
+            navigationOptions: {
+                drawerIcon: ({tintColor}) => (
+                    <Icon
+                        name='sign-in'
+                        type='font-awesome'
+                        size={24}
+                        color={tintColor}
+                    />
+                )
+            }
+        },
+        Home: {
+            screen: HomeNavigator,
+            navigationOptions: {
+                drawerIcon: ({tintColor}) => (
+                    <Icon
+                        name='home'
+                        type='font-awesome'
+                        size={24}
+                        color={tintColor}
+                    />
+                )
+            }
+        },
+        Directory: {
+            screen: DirectoryNavigator,
+            navigationOptions: {
+                drawerIcon: ({tintColor}) => (
+                    <Icon
+                        name='list'
+                        type='font-awesome'
+                        size={24}
+                        color={tintColor}
+                    />
+                )
+            }
+        },
+        Reservation: {
+            screen: ReservationNavigator,
+            navigationOptions: {
+                drawerLabel: 'Reserve Campsite',
+                drawerIcon: ({tintColor}) => (
+                    <Icon
+                        name='tree'
+                        type='font-awesome'
+                        size={24}
+                        color={tintColor}
+                    />
+                )
+            }
+        },
+        Favorites: {
+            screen: FavoritesNavigator,
+            navigationOptions: {
+                drawerLabel: 'My Favorites',
+                drawerIcon: ({tintColor}) => (
+                    <Icon
+                        name='heart'
+                        type='font-awesome'
+                        size={24}
+                        color={tintColor}
+                    />
+                )
+            }
+        },
+        About: {
+            screen: AboutNavigator,
+            navigationOptions: {
+                drawerLabel: 'About Us',
+                drawerIcon: ({tintColor}) => (
+                    <Icon
+                        name='info-circle'
+                        type='font-awesome'
+                        size={24}
+                        color={tintColor}
+                    />
+                )
+            }
+        },
+        Contact: {
+            screen: ContactNavigator,
+            navigationOptions: {
+                drawerLabel: 'Contact Us',
+                drawerIcon: ({tintColor}) => (
+                    <Icon
+                        name='address-card'
+                        type='font-awesome'
+                        size={24}
+                        color={tintColor}
+                    />
+                )
+            }
+        }
+    },
+    {
+        initialRouteName: 'Home',
+        drawerBackgroundColor: '#CEC8FF',
+        contentComponent: CustomDrawerContentComponent
+    }
+);
+
+const AppNavigator = createAppContainer(MainNavigator)
+
+class Main extends Component {
 
     componentDidMount() {
-        SecureStore.getItemAsync('userinfo')
-            .then(userdata => {
-                const userinfo = JSON.parse(userdata);
-                if (userinfo) {
-                    this.setState({username: userinfo.username});
-                    this.setState({password: userinfo.password});
-                    this.setState({remember: true})
-                }
-            });
+        this.props.fetchCampsites();
+        this.props.fetchComments();
+        this.props.fetchPromotions();
+        this.props.fetchPartners();
+
+        this.showNetInfo();
+
+        this.unsubscribeNetInfo = NetInfo.addEventListener(connectionInfo => {
+            this.handleConnectivityChange(connectionInfo);
+        });
+    }
+
+    async showNetInfo() {
+        const connectionInfo = await NetInfo.fetch();
+
+            (Platform.OS === 'ios') 
+                ? Alert.alert('Initial Network Connectivity Type:', connectionInfo.type)
+                : ToastAndroid.show('Initial Network Connectivity Type: ' +
+                    connectionInfo.type, ToastAndroid.LONG);
+    }
+
+    componentWillUnmount() {
+        this.unsubscribeNetInfo();
+    }
+
+    handleConnectivityChange = connectionInfo => {
+        let connectionMsg = 'You are now connected to an active network.';
+        switch (connectionInfo.type) {
+            case 'none':
+                connectionMsg = 'No network connection is active.';
+                break;
+            case 'unknown':
+                connectionMsg = 'The network connection state is now unknown.';
+                break;
+            case 'cellular':
+                connectionMsg = 'You are now connected to a cellular network.';
+                break;
+            case 'wifi':
+                connectionMsg = 'You are now connected to a WiFi network.';
+                break;
+        }
+        (Platform.OS === 'ios')
+            ? Alert.alert('Connection change:', connectionMsg)
+            : ToastAndroid.show(connectionMsg, ToastAndroid.LONG);
     }
 
     render() {
         return (
-            <View style={styles.container}>
-                <Input
-                    placeholder='Username'
-                    leftIcon={{type: 'font-awesome', name: 'user-o'}}
-                    onChangeText={username => this.setState({username})}
-                    value={this.state.username}
-                    containerStyle={styles.formInput}
-                    leftIconContainerStyle={styles.formIcon}
-                />
-                <Input
-                    placeholder='Password'
-                    leftIcon={{type: 'font-awesome', name: 'key'}}
-                    onChangeText={password => this.setState({password})}
-                    value={this.state.password}
-                    containerStyle={styles.formInput}
-                    leftIconContainerStyle={styles.formIcon}
-                />
-                <CheckBox
-                    title='Remember Me'
-                    center
-                    checked={this.state.remember}
-                    onPress={() => this.setState({remember: !this.state.remember})}
-                    containerStyle={styles.formCheckbox}
-                />
-                <View style={styles.formButton}>
-                    <Button
-                        onPress={() => this.handleLogin()}
-                        title='Login'
-                        icon={
-                            <Icon
-                                name='sign-in'
-                                type='font-awesome'
-                                color='#fff'
-                                iconStyle={{marginRight: 10}}
-                            />
-                        }
-                        buttonStyle={{backgroundColor: '#5637DD'}}
-                    />
-                </View>
-                <View style={styles.formButton}>
-                    <Button
-                        onPress={() => this.props.navigation.navigate('Register')}
-                        title='Register'
-                        type='clear'
-                        icon={
-                            <Icon
-                                name='user-plus'
-                                type='font-awesome'
-                                color='blue'
-                                iconStyle={{marginRight: 10}}
-                            />
-                        }
-                        titleStyle={{color: 'blue'}}
-                    />
-                </View>
+            <View
+                style={{
+                    flex: 1, 
+                    paddingTop: Platform.OS === 'ios' ? 0 : Expo.Constants.statusBarHeight
+                }}>
+                <AppNavigator />
             </View>
         );
     }
 }
 
-class RegisterTab extends Component {
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            username: '',
-            password: '',
-            firstname: '',
-            lastname: '',
-            email: '',
-            remember: false,
-            imageUrl: baseUrl + 'images/logo.png'
-        };
-    }
-
-    static navigationOptions = {
-        title: 'Register',
-        tabBarIcon: ({tintColor}) => (
-            <Icon
-                name='user-plus'
-                type='font-awesome'
-                iconStyle={{color: tintColor}}
-            />
-        )
-    }
-
-    getImageFromCamera = async () => {
-        const cameraPermission = await Permissions.askAsync(Permissions.CAMERA);
-        const cameraRollPermission = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-
-        if (cameraPermission.status === 'granted' && cameraRollPermission.status === 'granted') {
-            const capturedImage = await ImagePicker.launchCameraAsync({
-                allowsEditing: true,
-                aspect: [1, 1]
-            });
-            if (!capturedImage.cancelled) {
-                console.log(capturedImage);
-                this.setState({imageUrl: capturedImage.uri});
-            }
-        }
-    }
-
-    handleRegister() {
-        console.log(JSON.stringify(this.state));
-        if (this.state.remember) {
-            SecureStore.setItemAsync('userinfo', JSON.stringify(
-                {username: this.state.username, password: this.state.password}))
-                .catch(error => console.log('Could not save user info', error));
-        } else {
-            SecureStore.deleteItemAsync('userinfo').catch(
-                error => console.log('Could not delete user info', error)
-            );
-        }
-    }
-
-    render() {
-        return (
-            <ScrollView>
-                <View style={styles.container}>
-                    <View style={styles.imageContainer}>
-                        <Image
-                            source={{uri: this.state.imageUrl}}
-                            loadingIndicatorSource={require('./images/logo.png')}
-                            style={styles.image}
-                        />
-                        <Button
-                            title='Camera'
-                            onPress={this.getImageFromCamera}
-                        />
-                    </View>
-                    <Input
-                        placeholder='Username'
-                        leftIcon={{type: 'font-awesome', name: 'user-o'}}
-                        onChangeText={username => this.setState({username})}
-                        value={this.state.username}
-                        containerStyle={styles.formInput}
-                        leftIconContainerStyle={styles.formIcon}
-                    />
-                    <Input
-                        placeholder='Password'
-                        leftIcon={{type: 'font-awesome', name: 'key'}}
-                        onChangeText={password => this.setState({password})}
-                        value={this.state.password}
-                        containerStyle={styles.formInput}
-                        leftIconContainerStyle={styles.formIcon}
-                    />
-                    <Input
-                        placeholder='First Name'
-                        leftIcon={{type: 'font-awesome', name: 'user-o'}}
-                        onChangeText={firstname => this.setState({firstname})}
-                        value={this.state.firstname}
-                        containerStyle={styles.formInput}
-                        leftIconContainerStyle={styles.formIcon}
-                    />
-                    <Input
-                        placeholder='Last Name'
-                        leftIcon={{type: 'font-awesome', name: 'user-o'}}
-                        onChangeText={lastname => this.setState({lastname})}
-                        value={this.state.lastname}
-                        containerStyle={styles.formInput}
-                        leftIconContainerStyle={styles.formIcon}
-                    />
-                    <Input
-                        placeholder='Email'
-                        leftIcon={{type: 'font-awesome', name: 'envelope-o'}}
-                        onChangeText={email => this.setState({email})}
-                        value={this.state.email}
-                        containerStyle={styles.formInput}
-                        leftIconContainerStyle={styles.formIcon}
-                    />
-                    <CheckBox
-                        title='Remember Me'
-                        center
-                        checked={this.state.remember}
-                        onPress={() => this.setState({remember: !this.state.remember})}
-                        containerStyle={styles.formCheckbox}
-                    />
-                    <View style={styles.formButton}>
-                        <Button
-                            onPress={() => this.handleRegister()}
-                            title='Register'
-                            icon={
-                                <Icon
-                                    name='user-plus'
-                                    type='font-awesome'
-                                    color='#fff'
-                                    iconStyle={{marginRight: 10}}
-                                />
-                            }
-                            buttonStyle={{backgroundColor: '#5637DD'}}
-                        />
-                    </View>
-                </View>
-            </ScrollView>
-        );
-    }
-}
-
-const Login = createBottomTabNavigator(
-    {
-        Login: LoginTab,
-        Register: RegisterTab
-    },
-    {
-        tabBarOptions: {
-            activeBackgroundColor: '#5637DD',
-            inactiveBackgroundColor: '#CEC8FF',
-            activeTintColor: '#fff',
-            inactiveTintColor: '#808080',
-            labelStyle: {fontSize: 16}
-        }
-    }
-);
-
 const styles = StyleSheet.create({
     container: {
-        justifyContent: 'center',
-        margin: 10
+        flex: 1
     },
-    formIcon: {
-        marginRight: 10
-    },
-    formInput: {
-        padding: 8
-    },
-    formCheckbox: {
-        margin: 8,
-        backgroundColor: null
-    },
-    formButton: {
-        margin: 20,
-        marginRight: 40,
-        marginLeft: 40
-    },
-    imageContainer: {
-        flex: 1,
-        flexDirection: 'row',
+    drawerHeader: {
+        backgroundColor: '#5637DD',
+        height: 140,
         alignItems: 'center',
-        justifyContent: 'space-evenly',
-        margin: 10
+        justifyContent: 'center',
+        flex: 1,
+        flexDirection: 'row'
     },
-    image: {
-        width: 60,
-        height: 60
+    drawerHeaderText: {
+        color: '#fff',
+        fontSize: 24,
+        fontWeight: 'bold'
+    },
+    drawerImage: {
+        margin: 10,
+        height: 60,
+        width: 60
+    },
+    stackIcon: {
+        marginLeft: 10,
+        color: '#fff',
+        fontSize: 24
     }
 });
 
-export default Login;
+export default connect(null, mapDispatchToProps)(Main);
